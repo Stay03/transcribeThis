@@ -191,6 +191,147 @@ class ApiService {
     });
     return this.handleResponse(response);
   }
+
+  // Admin endpoints
+  // Dashboard
+  async getAdminDashboardOverview() {
+    const response = await fetch(`${this.baseURL}/admin/dashboard/overview`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async getAdminDashboardStats(period = 30) {
+    const response = await fetch(`${this.baseURL}/admin/dashboard/stats?period=${period}`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  // User Management
+  async getAdminUsers(params = {}) {
+    const searchParams = new URLSearchParams(params);
+    const response = await fetch(`${this.baseURL}/admin/users?${searchParams}`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async getAdminUser(id) {
+    const response = await fetch(`${this.baseURL}/admin/users/${id}`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateAdminUser(id, userData) {
+    const response = await fetch(`${this.baseURL}/admin/users/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(userData)
+    });
+    return this.handleResponse(response);
+  }
+
+  async deleteAdminUser(id) {
+    const response = await fetch(`${this.baseURL}/admin/users/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async changeUserPlan(userId, planId) {
+    const response = await fetch(`${this.baseURL}/admin/users/${userId}/change-plan`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ plan_id: planId })
+    });
+    return this.handleResponse(response);
+  }
+
+  // Plan Management
+  async getAdminPlans(params = {}) {
+    const searchParams = new URLSearchParams(params);
+    const response = await fetch(`${this.baseURL}/admin/plans?${searchParams}`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async getAdminPlan(id) {
+    const response = await fetch(`${this.baseURL}/admin/plans/${id}`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async createAdminPlan(planData) {
+    const response = await fetch(`${this.baseURL}/admin/plans`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(planData)
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateAdminPlan(id, planData) {
+    const response = await fetch(`${this.baseURL}/admin/plans/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(planData)
+    });
+    return this.handleResponse(response);
+  }
+
+  async deleteAdminPlan(id) {
+    const response = await fetch(`${this.baseURL}/admin/plans/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  // Transcription Management
+  async getAdminTranscriptions(params = {}) {
+    const searchParams = new URLSearchParams(params);
+    const response = await fetch(`${this.baseURL}/admin/transcriptions?${searchParams}`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async getAdminTranscription(id) {
+    const response = await fetch(`${this.baseURL}/admin/transcriptions/${id}`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async deleteAdminTranscription(id) {
+    const response = await fetch(`${this.baseURL}/admin/transcriptions/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  // System Settings
+  async getAdminSettings() {
+    const response = await fetch(`${this.baseURL}/admin/settings`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateAdminSettings(settings) {
+    const response = await fetch(`${this.baseURL}/admin/settings`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ settings })
+    });
+    return this.handleResponse(response);
+  }
 }
 
 export const apiService = new ApiService();

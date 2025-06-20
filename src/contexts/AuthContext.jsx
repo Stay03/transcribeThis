@@ -127,7 +127,8 @@ export const AuthProvider = ({ children }) => {
     refreshProfile,
     loginWithGoogle,
     setAuthFromOAuth,
-    isAuthenticated: !!token && !!user
+    isAuthenticated: !!token && !!user,
+    isAdmin: !!user && user.role === 'admin'
   };
 
   return (

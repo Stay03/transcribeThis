@@ -12,6 +12,12 @@ import SettingsPage from './pages/SettingsPage'
 import AuthSuccessPage from './pages/AuthSuccessPage'
 import AuthErrorPage from './pages/AuthErrorPage'
 import LoadingSpinner from './components/LoadingSpinner'
+import AdminRoute from './components/admin/AdminRoute'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminUsers from './pages/admin/AdminUsers'
+import AdminPlans from './pages/admin/AdminPlans'
+import AdminTranscriptions from './pages/admin/AdminTranscriptions'
+import AdminSettings from './pages/admin/AdminSettings'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth()
@@ -73,6 +79,33 @@ function App() {
               } />
               <Route path="/auth/success" element={<AuthSuccessPage />} />
               <Route path="/auth/error" element={<AuthErrorPage />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin" element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              } />
+              <Route path="/admin/users" element={
+                <AdminRoute>
+                  <AdminUsers />
+                </AdminRoute>
+              } />
+              <Route path="/admin/plans" element={
+                <AdminRoute>
+                  <AdminPlans />
+                </AdminRoute>
+              } />
+              <Route path="/admin/transcriptions" element={
+                <AdminRoute>
+                  <AdminTranscriptions />
+                </AdminRoute>
+              } />
+              <Route path="/admin/settings" element={
+                <AdminRoute>
+                  <AdminSettings />
+                </AdminRoute>
+              } />
             </Routes>
             <Toaster />
           </div>
