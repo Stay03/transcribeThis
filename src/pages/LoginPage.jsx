@@ -5,17 +5,21 @@ import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Alert, AlertDescription } from '../components/ui/alert'
+import { GoogleButton } from '../components/ui/google-button'
 import { Loader2, Mic } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { toast } from 'sonner'
+import SEOHead from '../components/SEOHead'
+import logoImage from '../assets/logo.png'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState('')
   
-  const { login } = useAuth()
+  const { login, loginWithGoogle } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -35,12 +39,25 @@ export default function LoginPage() {
     setLoading(false)
   }
 
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true)
+    setError('')
+    
+    const result = await loginWithGoogle()
+    
+    if (result && !result.success) {
+      setError(result.error)
+      setGoogleLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-muted/30">
+      <SEOHead page="login" />
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center space-x-2 mb-8">
-          <Mic className="h-8 w-8 text-primary" />
+          <img src={logoImage} alt="TranscribeThis Logo" className="w-8" />
           <span className="text-2xl font-bold">TranscribeThis</span>
         </div>
 
@@ -52,6 +69,25 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <GoogleButton 
+              onClick={handleGoogleLogin} 
+              loading={googleLoading}
+              className="w-full mb-4"
+            >
+              Continue with Google
+            </GoogleButton>
+            
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with email
+                </span>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>

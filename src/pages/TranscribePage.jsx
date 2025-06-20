@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
@@ -23,6 +23,7 @@ import { apiService } from '../services/api'
 import { validateAudioFile, formatFileSize } from '../utils/fileValidation'
 import { toast } from 'sonner'
 import Navbar from '../components/Navbar'
+import SEOHead from '../components/SEOHead'
 
 export default function TranscribePage() {
   const [file, setFile] = useState(null)
@@ -31,9 +32,29 @@ export default function TranscribePage() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
   const [dragActive, setDragActive] = useState(false)
+  const [usageStats, setUsageStats] = useState(null)
+  const [loadingUsage, setLoadingUsage] = useState(true)
   
   const { currentPlan, refreshProfile } = useAuth()
   const navigate = useNavigate()
+
+  const fetchUsageStats = async () => {
+    try {
+      setLoadingUsage(true)
+      const response = await apiService.getUsageStats()
+      setUsageStats(response.usage)
+    } catch (error) {
+      console.error('Failed to fetch usage stats:', error)
+    } finally {
+      setLoadingUsage(false)
+    }
+  }
+
+  useEffect(() => {
+    if (currentPlan) {
+      fetchUsageStats()
+    }
+  }, [currentPlan])
 
   const validateFile = (file) => {
     const maxSize = currentPlan?.limits?.max_file_size_mb || 10
@@ -94,6 +115,7 @@ export default function TranscribePage() {
       const data = await apiService.transcribeAudio(file, prompt)
       setResult(data)
       refreshProfile() // Update usage stats
+      fetchUsageStats() // Refresh usage stats
       toast.success('Transcription completed successfully!')
     } catch (error) {
       setError(error.message)
@@ -122,6 +144,7 @@ export default function TranscribePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead page="transcribe" />
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
@@ -132,38 +155,6 @@ export default function TranscribePage() {
               Upload your audio file and get accurate transcription in seconds
             </p>
           </div>
-
-          {/* Usage Stats */}
-          {currentPlan && (
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-lg">Current Usage - {currentPlan.name} Plan</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Monthly Transcriptions</span>
-                      <span>{result?.usage_info?.current_usage?.transcriptions_used || 0} / {currentPlan.limits.monthly_transcriptions}</span>
-                    </div>
-                    <Progress 
-                      value={((result?.usage_info?.current_usage?.transcriptions_used || 0) / currentPlan.limits.monthly_transcriptions) * 100} 
-                      className="h-2"
-                    />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Max File Size</span>
-                      <span>{currentPlan.limits.max_file_size_mb}MB</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {currentPlan.limits.total_prompts} custom prompts available
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Upload Section */}
@@ -178,7 +169,7 @@ export default function TranscribePage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* File Upload Area */}
                   <div
-                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                    className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                       dragActive 
                         ? 'border-primary bg-primary/5' 
                         : file 
@@ -190,21 +181,33 @@ export default function TranscribePage() {
                     onDragLeave={handleDragLeave}
                   >
                     {file ? (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <FileAudio className="h-12 w-12 text-green-500 mx-auto" />
                         <div className="font-medium">{file.name}</div>
                         <div className="text-sm text-muted-foreground">
                           {formatFileSize(file.size)}
                         </div>
                         <Badge variant="secondary">Ready to transcribe</Badge>
+                        <div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setFile(null)}
+                            type="button"
+                          >
+                            Select Different File
+                          </Button>
+                        </div>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        <Upload className="h-12 w-12 text-muted-foreground mx-auto" />
-                        <div>
-                          <div className="font-medium mb-1">Drop your audio file here</div>
-                          <div className="text-sm text-muted-foreground">
-                            or click to browse
+                      <>
+                        <div className="space-y-4">
+                          <Upload className="h-12 w-12 text-muted-foreground mx-auto" />
+                          <div>
+                            <div className="font-medium mb-1">Drop your audio file here</div>
+                            <div className="text-sm text-muted-foreground">
+                              or click to browse
+                            </div>
                           </div>
                         </div>
                         <input
@@ -213,7 +216,7 @@ export default function TranscribePage() {
                           onChange={handleFileChange}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
-                      </div>
+                      </>
                     )}
                   </div>
 
@@ -337,9 +340,9 @@ export default function TranscribePage() {
                       <CheckCircle className="h-4 w-4" />
                       <AlertDescription>
                         Transcription completed successfully! 
-                        {result.usage_info && (
+                        {usageStats && currentPlan && (
                           <span className="ml-1">
-                            You have {result.usage_info.remaining.transcriptions} transcriptions remaining this month.
+                            You have {currentPlan.limits.monthly_transcriptions - (usageStats.current_usage?.transcriptions_used || 0)} transcriptions remaining this month.
                           </span>
                         )}
                       </AlertDescription>

@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: 'http://localhost:8000/api',
+  BASE_URL: 'https://apimagic.website/transcribeThis/api',
   TIMEOUT: 30000, // 30 seconds
   RETRY_ATTEMPTS: 3
 }

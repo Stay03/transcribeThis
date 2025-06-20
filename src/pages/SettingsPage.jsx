@@ -22,6 +22,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { apiService } from '../services/api'
 import { toast } from 'sonner'
 import Navbar from '../components/Navbar'
+import SEOHead from '../components/SEOHead'
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false)
@@ -139,8 +140,13 @@ export default function SettingsPage() {
     return total > 0 ? (used / total) * 100 : 0
   }
 
+  const getRemainingUsage = (used, total) => {
+    return Math.max(0, total - used)
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead page="settings" />
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
@@ -155,19 +161,19 @@ export default function SettingsPage() {
           <Tabs defaultValue="profile" className="space-y-6">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="profile" className="flex items-center space-x-2">
-                <User className="h-4 w-4" />
+                <User className="h-4 w-4 hidden sm:block" />
                 <span>Profile</span>
               </TabsTrigger>
               <TabsTrigger value="security" className="flex items-center space-x-2">
-                <Lock className="h-4 w-4" />
+                <Lock className="h-4 w-4 hidden sm:block" />
                 <span>Security</span>
               </TabsTrigger>
               <TabsTrigger value="subscription" className="flex items-center space-x-2">
-                <Crown className="h-4 w-4" />
+                <Crown className="h-4 w-4 hidden sm:block" />
                 <span>Subscription</span>
               </TabsTrigger>
               <TabsTrigger value="usage" className="flex items-center space-x-2">
-                <BarChart3 className="h-4 w-4" />
+                <BarChart3 className="h-4 w-4 hidden sm:block" />
                 <span>Usage</span>
               </TabsTrigger>
             </TabsList>
@@ -314,7 +320,7 @@ export default function SettingsPage() {
                 </Card>
 
                 {/* Available Plans */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-3 gap-6">
                   {plans.map((plan) => (
                     <Card key={plan.id} className={`relative ${
                       currentPlan?.id === plan.id ? 'ring-2 ring-primary' : ''
@@ -384,7 +390,7 @@ export default function SettingsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {usageStats ? (
+                  {usageStats && usageStats.current_usage && usageStats.limits ? (
                     <div className="space-y-6">
                       <div className="grid md:grid-cols-2 gap-6">
                         <div>
@@ -402,7 +408,7 @@ export default function SettingsPage() {
                             className="h-3"
                           />
                           <div className="text-xs text-muted-foreground mt-1">
-                            {usageStats.remaining.transcriptions} remaining
+                            {getRemainingUsage(usageStats.current_usage.transcriptions_used, usageStats.limits.monthly_transcriptions)} remaining
                           </div>
                         </div>
 
@@ -421,7 +427,7 @@ export default function SettingsPage() {
                             className="h-3"
                           />
                           <div className="text-xs text-muted-foreground mt-1">
-                            {usageStats.remaining.prompts} remaining
+                            {getRemainingUsage(usageStats.current_usage.prompts_used, usageStats.limits.total_prompts)} remaining
                           </div>
                         </div>
                       </div>

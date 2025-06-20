@@ -4,6 +4,7 @@ import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Progress } from '../components/ui/progress'
 import { Badge } from '../components/ui/badge'
+import { Skeleton } from '../components/ui/skeleton'
 import { 
   FileText, 
   Clock, 
@@ -18,7 +19,7 @@ import {
 import { useAuth } from '../contexts/AuthContext'
 import { apiService } from '../services/api'
 import Navbar from '../components/Navbar'
-import LoadingSpinner from '../components/LoadingSpinner'
+import SEOHead from '../components/SEOHead'
 
 export default function DashboardPage() {
   const [usageStats, setUsageStats] = useState(null)
@@ -50,9 +51,6 @@ export default function DashboardPage() {
     fetchData()
   }, [])
 
-  if (loading) {
-    return <LoadingSpinner />
-  }
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -67,8 +65,26 @@ export default function DashboardPage() {
     return total > 0 ? (used / total) * 100 : 0
   }
 
+  // Helper function to determine if user is on free plan
+  const isFreeUser = () => {
+    // Check if currentPlan is null/undefined (default free user)
+    if (!currentPlan) return true
+    
+    // Check if explicitly marked as free
+    if (currentPlan.is_free === true) return true
+    
+    // Check plan name for "free" (case insensitive)
+    if (currentPlan.name && currentPlan.name.toLowerCase().includes('free')) return true
+    
+    // Check if plan ID indicates free plan
+    if (currentPlan.id === 'free' || currentPlan.plan_id === 'free') return true
+    
+    return false
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead page="dashboard" />
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
@@ -133,7 +149,7 @@ export default function DashboardPage() {
                       <Crown className="h-5 w-5" />
                       <span>Current Plan</span>
                     </CardTitle>
-                    {!currentPlan?.is_free && (
+                    {!isFreeUser() && (
                       <Badge variant="secondary">
                         <Crown className="h-3 w-3 mr-1" />
                         Pro
@@ -147,7 +163,7 @@ export default function DashboardPage() {
                       <span className="text-lg font-semibold">
                         {currentPlan?.name || 'Free'} Plan
                       </span>
-                      {currentPlan?.is_free && (
+                      {isFreeUser() && (
                         <Link to="/settings">
                           <Button size="sm">
                             <Crown className="h-4 w-4 mr-2" />
@@ -157,7 +173,7 @@ export default function DashboardPage() {
                       )}
                     </div>
                     
-                    {usageStats && (
+                    {usageStats ? (
                       <div className="space-y-4">
                         {/* Transcriptions Usage */}
                         <div>
@@ -199,21 +215,42 @@ export default function DashboardPage() {
                           <span className="font-medium">{usageStats.limits.max_file_size_mb}MB</span>
                         </div>
                       </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex justify-between text-sm mb-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-4 w-16" />
+                          </div>
+                          <Skeleton className="h-2 w-full" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-sm mb-2">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-4 w-12" />
+                          </div>
+                          <Skeleton className="h-2 w-full" />
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <Skeleton className="h-4 w-20" />
+                          <Skeleton className="h-4 w-8" />
+                        </div>
+                      </div>
                     )}
                   </div>
                 </CardContent>
               </Card>
 
               {/* Account Statistics */}
-              {accountStats && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <BarChart3 className="h-5 w-5" />
-                      <span>Account Statistics</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <BarChart3 className="h-5 w-5" />
+                    <span>Account Statistics</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {accountStats ? (
                     <div className="grid md:grid-cols-3 gap-4">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-primary">
@@ -240,9 +277,24 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                  ) : (
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <Skeleton className="h-8 w-8 mx-auto mb-2" />
+                        <Skeleton className="h-4 w-24 mx-auto" />
+                      </div>
+                      <div className="text-center">
+                        <Skeleton className="h-8 w-8 mx-auto mb-2" />
+                        <Skeleton className="h-4 w-16 mx-auto" />
+                      </div>
+                      <div className="text-center">
+                        <Skeleton className="h-8 w-12 mx-auto mb-2" />
+                        <Skeleton className="h-4 w-28 mx-auto" />
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
             {/* Recent Activity */}
@@ -255,7 +307,20 @@ export default function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {recentTranscriptions.length > 0 ? (
+                  {loading ? (
+                    Array.from({length: 3}).map((_, i) => (
+                      <div key={i} className="flex items-start space-x-3 pb-3 border-b last:border-b-0">
+                        <Skeleton className="h-8 w-8 rounded-lg" />
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <Skeleton className="h-4 w-3/4" />
+                          <div className="flex items-center space-x-2">
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-4 w-20" />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : recentTranscriptions.length > 0 ? (
                     recentTranscriptions.map((transcription) => (
                       <div key={transcription.id} className="flex items-start space-x-3 pb-3 border-b last:border-b-0">
                         <div className="p-2 bg-muted rounded-lg">

@@ -95,6 +95,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      const data = await apiService.getGoogleAuthUrl();
+      window.location.href = data.redirect_url;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const setAuthFromOAuth = (token, user) => {
+    setToken(token);
+    setUser(user);
+    setCurrentPlan(user.current_plan || null);
+    localStorage.setItem('token', token);
+  };
+
   useEffect(() => {
     fetchProfile();
   }, [token]);
@@ -109,6 +125,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     refreshProfile,
+    loginWithGoogle,
+    setAuthFromOAuth,
     isAuthenticated: !!token && !!user
   };
 

@@ -3,11 +3,16 @@ import { Link } from 'react-router-dom'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
-import { CheckCircle, Mic, Zap, Shield, ArrowRight, Users, Star } from 'lucide-react'
+import { CheckCircle, Mic, Zap, Shield, ArrowRight, Users, Star, Clock, FileText, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react'
 import { apiService } from '../services/api'
+import { useAuth } from '../contexts/AuthContext'
+import SEOHead from '../components/SEOHead'
+import logoImage from '../assets/logo.png'
 
 export default function LandingPage() {
+  const { isAuthenticated, user } = useAuth()
   const [plans, setPlans] = useState([])
+  const [expandedFAQ, setExpandedFAQ] = useState(null)
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -21,22 +26,63 @@ export default function LandingPage() {
     fetchPlans()
   }, [])
 
+  const faqData = [
+    {
+      question: "What transcription formats do you support?",
+      answer: "We offer three specialized formats: Verbatim (word-for-word exact transcription including filler words), Subtitle format (time-coded for video captions), and Readable format (clean, formatted text with proper punctuation). Each format is optimized for different use cases."
+    },
+    {
+      question: "How fast is your AI transcription service?",
+      answer: "Our lightning-fast AI processes most audio files in seconds, not hours. A typical 10-minute audio file is transcribed in under 30 seconds with 99% accuracy. Processing speed depends on file length and complexity."
+    },
+    {
+      question: "What audio file formats do you accept?",
+      answer: "We support all major audio formats including MP3, WAV, M4A, MP4, and WebM files. Maximum file sizes vary by plan: 10MB (Free), 50MB (Pro), and 100MB (Enterprise)."
+    },
+    {
+      question: "How accurate is your speech-to-text conversion?",
+      answer: "Our AI-powered transcription achieves 99% accuracy for clear audio with minimal background noise. Accuracy may vary based on audio quality, accents, and technical terminology. Our custom prompts feature helps improve accuracy for specialized content."
+    },
+    {
+      question: "Can I use custom prompts for better transcription?",
+      answer: "Yes! Custom prompts help our AI understand context and terminology specific to your industry. For example, prompts like 'Focus on medical terminology' or 'Include speaker names' significantly improve transcription quality."
+    },
+    {
+      question: "Is my audio data secure and private?",
+      answer: "Absolutely. We use enterprise-grade security with end-to-end encryption. Audio files are processed securely and automatically deleted after transcription. We never store or share your content."
+    }
+  ]
+
+  const toggleFAQ = (index) => {
+    setExpandedFAQ(expandedFAQ === index ? null : index)
+  }
+
   return (
     <div className="min-h-screen">
+      <SEOHead page="home" />
+      
       {/* Navigation */}
       <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Mic className="h-8 w-8 text-primary" />
+            <img src={logoImage} alt="TranscribeThis Logo" className=" w-8" />
             <span className="text-xl font-bold">TranscribeThis</span>
           </div>
           <div className="flex items-center space-x-4">
-            <Link to="/login">
-              <Button variant="ghost">Login</Button>
-            </Link>
-            <Link to="/signup">
-              <Button>Get Started Free</Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/dashboard">
+                <Button>My Account</Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost">Login</Button>
+                </Link>
+                <Link to="/signup" className="hidden sm:block">
+                  <Button>Get Started Free</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -56,13 +102,13 @@ export default function LandingPage() {
             in seconds. Perfect for meetings, interviews, podcasts, and more.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup">
-              <Button size="lg" className="text-lg px-8">
-                Start Free Trial
+            <Link to={isAuthenticated ? "/transcribe" : "/signup"} className="w-full sm:w-auto">
+              <Button size="lg" className="text-lg px-8 w-full sm:w-auto">
+                {isAuthenticated ? "Transcribe Now" : "Start Free Trial"}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="text-lg px-8">
+            <Button size="lg" variant="outline" className="text-lg px-8 w-full sm:w-auto">
               Watch Demo
             </Button>
           </div>
@@ -133,10 +179,10 @@ export default function LandingPage() {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {plans.map((plan) => (
-              <Card key={plan.id} className={`relative ${!plan.is_free ? 'border-primary shadow-lg' : ''}`}>
-                {!plan.is_free && (
+              <Card key={plan.id} className={`relative ${plan.name?.toLowerCase() === 'pro' ? 'border-primary shadow-lg' : ''}`}>
+                {plan.name?.toLowerCase() === 'pro' && (
                   <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2">
                     Most Popular
                   </Badge>
@@ -190,6 +236,83 @@ export default function LandingPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Transcription Formats Section */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Multiple Transcription Formats for Every Need
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Choose from three specialized formats: verbatim word-for-word accuracy, 
+              subtitle timing for videos, or readable clean formatting. Our AI adapts to your specific requirements.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <MessageSquare className="h-12 w-12 text-primary mb-4" />
+                <CardTitle>Complete Verbatim Transcription</CardTitle>
+                <CardDescription>
+                  Exact word-for-word transcription including filler words, pauses, and natural speech patterns. 
+                  Perfect for legal proceedings, research interviews, and detailed analysis where every word matters.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Badge variant="secondary" className="mb-3">Most Accurate</Badge>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  <li>• Includes "um," "uh," and pauses</li>
+                  <li>• False starts and corrections</li>
+                  <li>• Speaker identification</li>
+                  <li>• Legal and research standard</li>
+                </ul>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <Clock className="h-12 w-12 text-primary mb-4" />
+                <CardTitle>Readable Verbatim Transcription</CardTitle>
+                <CardDescription>
+                  Clean, word-for-word transcription with improved readability and proper formatting. 
+                  Removes filler words while maintaining accuracy for professional documentation and content creation.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Badge variant="secondary" className="mb-3">Professional</Badge>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  <li>• Clean formatting</li>
+                  <li>• Removes filler words</li>
+                  <li>• Maintains accuracy</li>
+                  <li>• Professional output</li>
+                </ul>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <FileText className="h-12 w-12 text-primary mb-4" />
+                <CardTitle>Meeting Note</CardTitle>
+                <CardDescription>
+                  Structured summary format that captures key points, action items, and decisions. 
+                  Organized with clear sections and bullet points for easy review and distribution.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Badge variant="secondary" className="mb-3">Structured</Badge>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  <li>• Key points extraction</li>
+                  <li>• Action items highlighted</li>
+                  <li>• Decision tracking</li>
+                  <li>• Meeting-ready format</li>
+                </ul>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -250,6 +373,45 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Get answers about our lightning-fast transcription service, accuracy rates, and supported formats.
+            </p>
+          </div>
+          
+          <div className="max-w-3xl mx-auto space-y-4">
+            {faqData.map((faq, index) => (
+              <Card key={index} className="border">
+                <CardHeader 
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => toggleFAQ(index)}
+                >
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg text-left">{faq.question}</CardTitle>
+                    {expandedFAQ === index ? (
+                      <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                </CardHeader>
+                {expandedFAQ === index && (
+                  <CardContent>
+                    <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
+                  </CardContent>
+                )}
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
@@ -273,7 +435,7 @@ export default function LandingPage() {
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <Mic className="h-6 w-6 text-primary" />
+              <img src={logoImage} alt="TranscribeThis Logo" className="h-6 w-6" />
               <span className="text-lg font-bold">TranscribeThis</span>
             </div>
             <div className="text-sm text-muted-foreground">

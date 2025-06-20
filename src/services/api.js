@@ -183,6 +183,14 @@ class ApiService {
     });
     return this.handleResponse(response);
   }
+
+  // Google OAuth endpoints
+  async getGoogleAuthUrl() {
+    const response = await fetch(`${this.baseURL}/auth/google/redirect`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
 }
 
 export const apiService = new ApiService();

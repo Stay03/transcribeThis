@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Button } from './ui/button'
-import { Avatar, AvatarFallback } from './ui/avatar'
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -10,6 +10,8 @@ import {
 } from './ui/dropdown-menu'
 import { Mic, User, Settings, LogOut, History, BarChart3, FileText } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import ThemeSwitcher from './ThemeSwitcher'
+import logoImage from '../assets/logo.png'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -30,7 +32,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/dashboard" className="flex items-center space-x-2">
-          <Mic className="h-8 w-8 text-primary" />
+          <img src={logoImage} alt="TranscribeThis Logo" className=" w-8" />
           <span className="text-xl font-bold">TranscribeThis</span>
         </Link>
 
@@ -59,6 +61,12 @@ export default function Navbar() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar className="h-10 w-10">
+                {user?.avatar && (
+                  <AvatarImage 
+                    src={user.avatar} 
+                    alt={user?.name || 'User avatar'} 
+                  />
+                )}
                 <AvatarFallback>
                   {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                 </AvatarFallback>
@@ -90,6 +98,10 @@ export default function Navbar() {
               <DropdownMenuSeparator />
             </div>
 
+            <div className="flex items-center justify-between px-2 py-1.5">
+              <span className="text-sm">Theme</span>
+              <ThemeSwitcher />
+            </div>
             <Link to="/settings">
               <DropdownMenuItem>
                 <Settings className="mr-2 h-4 w-4" />

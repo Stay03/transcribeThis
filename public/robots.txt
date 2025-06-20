@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Optimize for key pages
+Allow: /transcribe
+Allow: /signup
+Allow: /login
+Allow: /dashboard
+Allow: /history
+Allow: /settings
+
+# Disallow private/user content
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
+
+# Point to sitemap (when available)
+Sitemap: https://transcribethis.com/sitemap.xml
+
+# Crawl delay to be respectful
+Crawl-delay: 1

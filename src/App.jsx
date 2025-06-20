@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import { Toaster } from './components/ui/sonner'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
@@ -8,6 +9,8 @@ import DashboardPage from './pages/DashboardPage'
 import TranscribePage from './pages/TranscribePage'
 import HistoryPage from './pages/HistoryPage'
 import SettingsPage from './pages/SettingsPage'
+import AuthSuccessPage from './pages/AuthSuccessPage'
+import AuthErrorPage from './pages/AuthErrorPage'
 import LoadingSpinner from './components/LoadingSpinner'
 
 function ProtectedRoute({ children }) {
@@ -32,46 +35,50 @@ function PublicRoute({ children }) {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-background">
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={
-              <PublicRoute>
-                <LoginPage />
-              </PublicRoute>
-            } />
-            <Route path="/signup" element={
-              <PublicRoute>
-                <SignupPage />
-              </PublicRoute>
-            } />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/transcribe" element={
-              <ProtectedRoute>
-                <TranscribePage />
-              </ProtectedRoute>
-            } />
-            <Route path="/history" element={
-              <ProtectedRoute>
-                <HistoryPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <SettingsPage />
-              </ProtectedRoute>
-            } />
-          </Routes>
-          <Toaster />
-        </div>
-      </Router>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-background">
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={
+                <PublicRoute>
+                  <LoginPage />
+                </PublicRoute>
+              } />
+              <Route path="/signup" element={
+                <PublicRoute>
+                  <SignupPage />
+                </PublicRoute>
+              } />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/transcribe" element={
+                <ProtectedRoute>
+                  <TranscribePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/history" element={
+                <ProtectedRoute>
+                  <HistoryPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <SettingsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/auth/success" element={<AuthSuccessPage />} />
+              <Route path="/auth/error" element={<AuthErrorPage />} />
+            </Routes>
+            <Toaster />
+          </div>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

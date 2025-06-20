@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Badge } from '../components/ui/badge'
 import { Input } from '../components/ui/input'
 import { Alert, AlertDescription } from '../components/ui/alert'
+import { Skeleton } from '../components/ui/skeleton'
 import { 
   FileText, 
   Search, 
@@ -16,12 +17,13 @@ import {
   Clock,
   HardDrive,
   Filter,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react'
 import { apiService } from '../services/api'
 import { toast } from 'sonner'
 import Navbar from '../components/Navbar'
-import LoadingSpinner from '../components/LoadingSpinner'
+import SEOHead from '../components/SEOHead'
 
 export default function HistoryPage() {
   const [transcriptions, setTranscriptions] = useState([])
@@ -30,6 +32,7 @@ export default function HistoryPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pagination, setPagination] = useState(null)
   const [selectedTranscription, setSelectedTranscription] = useState(null)
+  const [loadingTranscriptionId, setLoadingTranscriptionId] = useState(null)
 
   useEffect(() => {
     fetchTranscriptions()
@@ -37,7 +40,9 @@ export default function HistoryPage() {
 
   const fetchTranscriptions = async () => {
     try {
-      setLoading(true)
+      if (transcriptions.length === 0) {
+        setLoading(true)
+      }
       const data = await apiService.getTranscriptions(currentPage, 10)
       setTranscriptions(data.transcriptions || [])
       setPagination(data.pagination)
@@ -81,10 +86,13 @@ export default function HistoryPage() {
 
   const handleViewDetails = async (id) => {
     try {
+      setLoadingTranscriptionId(id)
       const data = await apiService.getTranscription(id)
       setSelectedTranscription(data.transcription)
     } catch (error) {
       toast.error('Failed to load transcription details')
+    } finally {
+      setLoadingTranscriptionId(null)
     }
   }
 
@@ -116,12 +124,10 @@ export default function HistoryPage() {
     }
   }
 
-  if (loading && transcriptions.length === 0) {
-    return <LoadingSpinner />
-  }
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead page="history" />
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
@@ -160,19 +166,56 @@ export default function HistoryPage() {
           </div>
 
           {/* Transcriptions List */}
-          {filteredTranscriptions.length > 0 ? (
+          {loading && transcriptions.length === 0 ? (
+            <div className="space-y-4">
+              {Array.from({length: 5}).map((_, i) => (
+                <Card key={i} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex items-start space-x-4 flex-1">
+                        <Skeleton className="h-9 w-9 rounded-lg" />
+                        
+                        <div className="flex-1 min-w-0 space-y-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                            <Skeleton className="h-5 w-48" />
+                            <Skeleton className="h-5 w-16" />
+                          </div>
+                          
+                          <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-4 w-12" />
+                          </div>
+                          
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-3/4" />
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 ml-0 sm:ml-4 mt-4 sm:mt-0">
+                        <Skeleton className="h-8 w-full sm:w-8" />
+                        <Skeleton className="h-8 w-full sm:w-8" />
+                        <Skeleton className="h-8 w-full sm:w-8" />
+                        <Skeleton className="h-8 w-full sm:w-8" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : filteredTranscriptions.length > 0 ? (
             <div className="space-y-4">
               {filteredTranscriptions.map((transcription) => (
                 <Card key={transcription.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex items-start space-x-4 flex-1">
                         <div className="p-2 bg-muted rounded-lg">
                           <FileText className="h-5 w-5" />
                         </div>
                         
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 mb-2">
                             <h3 className="font-semibold truncate">
                               {transcription.original_filename}
                             </h3>
@@ -181,7 +224,7 @@ export default function HistoryPage() {
                             </Badge>
                           </div>
                           
-                          <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-sm text-muted-foreground mb-3">
                             <div className="flex items-center space-x-1">
                               <Calendar className="h-3 w-3" />
                               <span>{formatDate(transcription.created_at)}</span>
@@ -202,34 +245,49 @@ export default function HistoryPage() {
                         </div>
                       </div>
                       
-                      <div className="flex items-center space-x-2 ml-4">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 ml-0 sm:ml-4 mt-4 sm:mt-0">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleViewDetails(transcription.id)}
+                          disabled={loadingTranscriptionId === transcription.id}
+                          className="flex items-center justify-center space-x-2"
                         >
-                          <Eye className="h-4 w-4" />
+                          {loadingTranscriptionId === transcription.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                          <span className="sm:hidden">
+                            {loadingTranscriptionId === transcription.id ? 'Loading...' : 'View'}
+                          </span>
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleCopy(transcription.transcription_result)}
+                          className="flex items-center justify-center space-x-2"
                         >
                           <Copy className="h-4 w-4" />
+                          <span className="sm:hidden">Copy</span>
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleDownload(transcription)}
+                          className="flex items-center justify-center space-x-2"
                         >
                           <Download className="h-4 w-4" />
+                          <span className="sm:hidden">Download</span>
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleDelete(transcription.id)}
+                          className="flex items-center justify-center space-x-2"
                         >
                           <Trash2 className="h-4 w-4" />
+                          <span className="sm:hidden">Delete</span>
                         </Button>
                       </div>
                     </div>
@@ -281,11 +339,11 @@ export default function HistoryPage() {
           {/* Transcription Details Modal */}
           {selectedTranscription && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-              <Card className="w-full max-w-2xl max-h-[80vh] overflow-hidden">
+              <Card className="w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] overflow-hidden">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>{selectedTranscription.original_filename}</CardTitle>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="truncate">{selectedTranscription.original_filename}</CardTitle>
                       <CardDescription>
                         {formatDate(selectedTranscription.created_at)}
                       </CardDescription>
@@ -294,13 +352,14 @@ export default function HistoryPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => setSelectedTranscription(null)}
+                      className="self-end sm:self-auto"
                     >
                       Close
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
+                <CardContent className="space-y-4 overflow-y-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
                     <div className="text-center">
                       <div className="text-sm font-medium">Status</div>
                       <Badge variant={getStatusColor(selectedTranscription.status)}>
@@ -328,17 +387,18 @@ export default function HistoryPage() {
 
                   <div>
                     <h4 className="font-medium mb-2">Transcription Result</h4>
-                    <div className="max-h-64 overflow-y-auto p-4 border rounded-lg bg-background">
+                    <div className="max-h-48 sm:max-h-64 overflow-y-auto p-4 border rounded-lg bg-background">
                       <p className="whitespace-pre-wrap text-sm">
                         {selectedTranscription.transcription_result}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Button
                       onClick={() => handleCopy(selectedTranscription.transcription_result)}
                       variant="outline"
+                      className="flex items-center justify-center"
                     >
                       <Copy className="h-4 w-4 mr-2" />
                       Copy
@@ -346,6 +406,7 @@ export default function HistoryPage() {
                     <Button
                       onClick={() => handleDownload(selectedTranscription)}
                       variant="outline"
+                      className="flex items-center justify-center"
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Download

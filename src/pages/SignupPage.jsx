@@ -5,9 +5,12 @@ import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Alert, AlertDescription } from '../components/ui/alert'
+import { GoogleButton } from '../components/ui/google-button'
 import { Loader2, Mic, CheckCircle } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { toast } from 'sonner'
+import SEOHead from '../components/SEOHead'
+import logoImage from '../assets/logo.png'
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -17,9 +20,10 @@ export default function SignupPage() {
     passwordConfirmation: ''
   })
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState('')
   
-  const { register } = useAuth()
+  const { register, loginWithGoogle } = useAuth()
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -57,12 +61,25 @@ export default function SignupPage() {
     setLoading(false)
   }
 
+  const handleGoogleSignup = async () => {
+    setGoogleLoading(true)
+    setError('')
+    
+    const result = await loginWithGoogle()
+    
+    if (result && !result.success) {
+      setError(result.error)
+      setGoogleLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-muted/30">
+      <SEOHead page="signup" />
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center space-x-2 mb-8">
-          <Mic className="h-8 w-8 text-primary" />
+          <img src={logoImage} alt="TranscribeThis Logo" className=" w-8" />
           <span className="text-2xl font-bold">TranscribeThis</span>
         </div>
 
@@ -95,6 +112,25 @@ export default function SignupPage() {
                   Custom prompts
                 </li>
               </ul>
+            </div>
+
+            <GoogleButton 
+              onClick={handleGoogleSignup} 
+              loading={googleLoading}
+              className="w-full mb-4"
+            >
+              Sign up with Google
+            </GoogleButton>
+            
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with email
+                </span>
+              </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
