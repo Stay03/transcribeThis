@@ -30,7 +30,13 @@ function AdminTranscriptions() {
   const fetchTranscriptions = async () => {
     try {
       setLoading(true)
-      const data = await apiService.getAdminTranscriptions(filters)
+      // Filter out empty values before sending to API
+      const apiFilters = {}
+      if (filters.search) apiFilters.search = filters.search
+      if (filters.status) apiFilters.status = filters.status
+      if (filters.page) apiFilters.page = filters.page
+
+      const data = await apiService.getAdminTranscriptions(apiFilters)
       setTranscriptions(data.transcriptions)
       setPagination(data.meta)
       setStats(data.stats)
@@ -84,7 +90,7 @@ function AdminTranscriptions() {
   }
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes'
+    if (!bytes || bytes === 0) return '0 Bytes'
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
@@ -99,7 +105,7 @@ function AdminTranscriptions() {
         <div>
           <div className="font-medium truncate max-w-48">{value}</div>
           <div className="text-sm text-muted-foreground">
-            {formatFileSize(transcription.file_size)}
+            {transcription.file_size_mb ? `${transcription.file_size_mb} MB` : '0 MB'}
           </div>
         </div>
       )
@@ -171,6 +177,7 @@ function AdminTranscriptions() {
     {
       key: 'status',
       placeholder: 'Status',
+      value: filters.status,
       options: [
         { value: 'pending', label: 'Pending' },
         { value: 'processing', label: 'Processing' },
@@ -235,7 +242,7 @@ function AdminTranscriptions() {
                     <h3 className="font-semibold">File Information</h3>
                     <div className="space-y-2 text-sm">
                       <p><span className="font-medium">Filename:</span> {selectedTranscription.original_filename}</p>
-                      <p><span className="font-medium">Size:</span> {formatFileSize(selectedTranscription.file_size)}</p>
+                      <p><span className="font-medium">Size:</span> {selectedTranscription.file_size_mb ? `${selectedTranscription.file_size_mb} MB` : '0 MB'}</p>
                       <p><span className="font-medium">Status:</span> {getStatusBadge(selectedTranscription.status)}</p>
                       <p><span className="font-medium">Processing Time:</span> {selectedTranscription.processing_time}s</p>
                     </div>

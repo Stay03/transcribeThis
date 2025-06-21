@@ -332,6 +332,70 @@ class ApiService {
     });
     return this.handleResponse(response);
   }
+
+  // Activity endpoints
+  async getOnlineUsers() {
+    const response = await fetch(`${this.baseURL}/admin/activity/online`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async getDailyActiveUsers(date = null) {
+    const url = date 
+      ? `${this.baseURL}/admin/activity/daily?date=${date}`
+      : `${this.baseURL}/admin/activity/daily`;
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async getWeeklyActiveUsers(startDate = null) {
+    const url = startDate 
+      ? `${this.baseURL}/admin/activity/weekly?start_date=${startDate}`
+      : `${this.baseURL}/admin/activity/weekly`;
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async getMonthlyActiveUsers(month = null, year = null) {
+    const params = new URLSearchParams();
+    if (month) params.append('month', month);
+    if (year) params.append('year', year);
+    const queryString = params.toString();
+    const url = queryString 
+      ? `${this.baseURL}/admin/activity/monthly?${queryString}`
+      : `${this.baseURL}/admin/activity/monthly`;
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async getActivityAnalytics() {
+    const response = await fetch(`${this.baseURL}/admin/activity/analytics`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async getActivityTrends(days = 30) {
+    const response = await fetch(`${this.baseURL}/admin/activity/trends?days=${days}`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async getAdminActivityUsersList(params = {}) {
+    const searchParams = new URLSearchParams(params);
+    const response = await fetch(`${this.baseURL}/admin/activity/users-list?${searchParams}`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
 }
 
 export const apiService = new ApiService();

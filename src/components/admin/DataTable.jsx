@@ -22,6 +22,7 @@ function DataTable({
   onPageChange,
   onSearch,
   onFilter,
+  onRowClick,
   searchPlaceholder = "Search...",
   filters = []
 }) {
@@ -96,7 +97,11 @@ function DataTable({
               ))
             ) : data?.length ? (
               data.map((row, index) => (
-                <TableRow key={row.id || index}>
+                <TableRow 
+                  key={row.id || index}
+                  className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""}
+                  onClick={() => onRowClick?.(row)}
+                >
                   {columns.map((column) => (
                     <TableCell key={column.key} className={column.className}>
                       {column.render ? column.render(row[column.key], row) : row[column.key]}

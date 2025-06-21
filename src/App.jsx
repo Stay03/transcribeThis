@@ -14,6 +14,8 @@ import AuthErrorPage from './pages/AuthErrorPage'
 import LoadingSpinner from './components/LoadingSpinner'
 import AdminRoute from './components/admin/AdminRoute'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminActivity from './pages/admin/AdminActivity'
+import AdminActivityUsersList from './pages/admin/AdminActivityUsersList'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminPlans from './pages/admin/AdminPlans'
 import AdminTranscriptions from './pages/admin/AdminTranscriptions'
@@ -86,7 +88,17 @@ function App() {
                   <AdminDashboard />
                 </AdminRoute>
               } />
+              <Route path="/admin/activity/users" element={
+                <AdminRoute>
+                  <AdminActivityUsersList />
+                </AdminRoute>
+              } />
               <Route path="/admin/users" element={
+                <AdminRoute>
+                  <AdminUsers />
+                </AdminRoute>
+              } />
+              <Route path="/admin/users/:id" element={
                 <AdminRoute>
                   <AdminUsers />
                 </AdminRoute>

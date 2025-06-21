@@ -9,7 +9,8 @@ import {
   LogOut,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Activity
 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Tooltip } from '../ui/tooltip'
@@ -18,6 +19,7 @@ import { useEffect } from 'react'
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { name: 'Activity', href: '/admin/activity/users', icon: Activity },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Plans', href: '/admin/plans', icon: CreditCard },
   { name: 'Transcriptions', href: '/admin/transcriptions', icon: FileText },
@@ -118,6 +120,12 @@ function AdminSidebar({ isOpen, isCollapsed, onClose, onToggleCollapsed }) {
           isCollapsed ? "md:px-2" : "px-4"
         )}>
           {navigation.map((item) => {
+            // Check if current location matches this item exactly (not submenu)
+            const isParentActive = (item) => {
+              return window.location.pathname === item.href || 
+                     (item.href === '/admin' && window.location.pathname === '/admin')
+            }
+
             const navLinkContent = (
               <NavLink
                 key={item.name}
@@ -128,7 +136,7 @@ function AdminSidebar({ isOpen, isCollapsed, onClose, onToggleCollapsed }) {
                   cn(
                     'group flex items-center text-sm font-medium rounded-md transition-all duration-300 touch-manipulation',
                     isCollapsed ? 'md:justify-center md:px-2 md:py-3 px-3 py-2' : 'px-3 py-2',
-                    isActive
+                    isActive || isParentActive(item)
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   )
@@ -163,29 +171,77 @@ function AdminSidebar({ isOpen, isCollapsed, onClose, onToggleCollapsed }) {
                     </div>
                     {/* Mobile expanded (ignore collapsed state) */}
                     <div className="md:hidden">
-                      <NavLink
-                        to={item.href}
-                        end={item.href === '/admin'}
-                        onClick={handleNavClick}
-                        className={({ isActive }) =>
-                          cn(
-                            'group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors touch-manipulation',
-                            isActive
-                              ? 'bg-primary text-primary-foreground'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                          )
-                        }
-                      >
-                        <item.icon
-                          className="mr-3 h-5 w-5 flex-shrink-0"
-                          aria-hidden="true"
-                        />
-                        {item.name}
-                      </NavLink>
+                      <div className="space-y-1">
+                        <NavLink
+                          to={item.href}
+                          end={item.href === '/admin'}
+                          onClick={handleNavClick}
+                          className={({ isActive }) =>
+                            cn(
+                              'group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors touch-manipulation',
+                              isActive || isParentActive(item)
+                                ? 'bg-primary text-primary-foreground'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                            )
+                          }
+                        >
+                          <item.icon
+                            className="mr-3 h-5 w-5 flex-shrink-0"
+                            aria-hidden="true"
+                          />
+                          {item.name}
+                        </NavLink>
+                        {/* Show submenu on mobile when not collapsed */}
+                        {item.submenu && (
+                          <div className="ml-6 space-y-1">
+                            {item.submenu.map((subItem) => (
+                              <NavLink
+                                key={subItem.name}
+                                to={subItem.href}
+                                onClick={handleNavClick}
+                                className={({ isActive }) =>
+                                  cn(
+                                    'block px-3 py-1 text-sm rounded-md transition-colors touch-manipulation',
+                                    isActive
+                                      ? 'bg-primary/20 text-primary font-medium'
+                                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                                  )
+                                }
+                              >
+                                {subItem.name}
+                              </NavLink>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </>
                 ) : (
-                  navLinkContent
+                  <div className="space-y-1">
+                    {navLinkContent}
+                    {/* Show submenu when expanded */}
+                    {item.submenu && (
+                      <div className="ml-6 space-y-1">
+                        {item.submenu.map((subItem) => (
+                          <NavLink
+                            key={subItem.name}
+                            to={subItem.href}
+                            onClick={handleNavClick}
+                            className={({ isActive }) =>
+                              cn(
+                                'block px-3 py-1 text-sm rounded-md transition-colors touch-manipulation',
+                                isActive
+                                  ? 'bg-primary/20 text-primary font-medium'
+                                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                              )
+                            }
+                          >
+                            {subItem.name}
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             )
