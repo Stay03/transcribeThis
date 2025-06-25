@@ -333,6 +333,32 @@ class ApiService {
     return this.handleResponse(response);
   }
 
+  async clearCache(type) {
+    const response = await fetch(`${this.baseURL}/admin/settings/clear-cache`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ type })
+    });
+    return this.handleResponse(response);
+  }
+
+  async getLogs(params = {}) {
+    const searchParams = new URLSearchParams(params);
+    const response = await fetch(`${this.baseURL}/admin/settings/logs?${searchParams}`, {
+      headers: this.getAuthHeaders()
+    });
+    return this.handleResponse(response);
+  }
+
+  async clearLogs(backup = true) {
+    const response = await fetch(`${this.baseURL}/admin/settings/logs/clear`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ backup })
+    });
+    return this.handleResponse(response);
+  }
+
   // Activity endpoints
   async getOnlineUsers() {
     const response = await fetch(`${this.baseURL}/admin/activity/online`, {
